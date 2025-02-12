@@ -26,3 +26,41 @@ class SearchPokemonView(ListView):
             return result  # Filter by Pokemon name
         return Pokemon.objects.all()
     
+class FilterPokemonView(ListView):
+    model = Pokemon
+    context_object_name = "pokemon_filter"
+    template_name = 'index.html'
+
+    def get_queryset(self):
+        type_filter = self.request.GET.get("type", "")  # Get the selected type filter
+        
+        if type_filter:
+            result = Pokemon.objects.filter(types__name=type_filter)  # Filter by type
+        else:
+            result = Pokemon.objects.all()  # If no type filter, return all Pokémon
+
+        return result
+    
+class PokemonDetailView(DetailView):
+    model = Pokemon
+    context_object_name = "pokemon"
+    template_name = "pokemon_details.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pokemon_stats"] = self.object.pokemon_stats.all()  # Fetch related stats
+
+        species = self.object.species  # Get Pokémon's species
+
+        # Previous evolution (if exists)
+        context["previous_evolution"] = species.evolves_from_species if species else None  
+
+        # Next evolutions (if exists)
+        context["next_evolutions"] = species.evolves_to.all() if species else []  
+
+        return context
+    
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context["books"] =(self.object.books.all())
+    #     return context

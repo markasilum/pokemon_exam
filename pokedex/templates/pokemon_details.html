@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ pokemon.name }} Details</title>
+</head>
+<body>
+
+    <h1>{{ pokemon.name }}</h1>
+    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }}">
+
+    <p>Base Experience: {{ pokemon.base_experience }}</p>
+    <p>Height: {{ pokemon.height }}</p>
+    <p>Weight: {{ pokemon.weight }}</p>
+
+    <h2>Evolution</h2>
+
+    {% if previous_evolution %}
+        <p>Evolves from: <a href="{% url 'pokemon_detail' previous_evolution.pokemons.first.id %}">{{ previous_evolution.name }}</a></p>
+    {% else %}
+        <p>This Pokémon does not evolve from another.</p>
+    {% endif %}
+
+    {% if next_evolutions %}
+        <h3>Evolves into:</h3>
+        <ul>
+            {% for evolution in next_evolutions %}
+                <li>
+                    <a href="{% url 'pokemon_detail' evolution.pokemons.first.id %}">{{ evolution.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>This Pokémon has no further evolutions.</p>
+    {% endif %}
+
+    <h2>Stats</h2>
+    <ul>
+        {% for pokemon_stat in pokemon.pokemon_stats.all %}
+            <li>{{ pokemon_stat.stat.name }}: {{ pokemon_stat.base_stat }}</li>
+        {% empty %}
+            <li>No stats available</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Types</h2>
+    <ul>
+        {% for type in pokemon.types.all %}
+            <li>{{ type.name }}</li>
+        {% empty %}
+            <li>No types available</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Abilities</h2>
+    <ul>
+        {% for ability in pokemon.abilities.all %}
+            <li>{{ ability.name }}</li>
+        {% empty %}
+            <li>No abilities available</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Moves</h2>
+    <ul>
+        {% for move in pokemon.moves.all %}
+            <li>{{ move.name }}</li>
+        {% empty %}
+            <li>No moves available</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Held Items</h2>
+    <ul>
+        {% for item in pokemon.held_items.all %}
+            <li>{{ item.name }}</li>
+        {% empty %}
+            <li>No held items</li>
+        {% endfor %}
+    </ul>
+
+    {% if pokemon.species %}
+        <h2>Species</h2>
+        <p>{{ pokemon.species.name }}</p>
+    {% endif %}
+
+    <a href="{% url 'index' %}">Back to List</a>
+
+</body>
+</html>

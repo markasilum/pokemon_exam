@@ -15,7 +15,7 @@ class Pokemon(models.Model):
     moves = models.ManyToManyField('pokemons.Move', related_name="pokemons")
 
     def __str__(self):
-        return self.name if self.name else "Unnamed Pokémon"
+        return self.name
     
 	
 class PokemonStat(models.Model):
@@ -24,7 +24,7 @@ class PokemonStat(models.Model):
     stat = models.ForeignKey('pokemons.Stat',  on_delete=models.CASCADE, related_name="pokemons")
 
     def __str__(self):
-        return self.stat
+        return str(self.stat)
 
 # class PokemonType(models.Model):
 #     slot = models.IntegerField()
