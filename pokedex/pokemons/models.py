@@ -15,7 +15,7 @@ class Pokemon(models.Model):
 class PokemonStat(models.Model):
     base_stat = models.IntegerField()
     effort = models.IntegerField()
-    stat = models.ForeignKey('pokemons.Stat', related_name="pokemons")
+    stat = models.ForeignKey('pokemons.Stat',  on_delete=models.CASCADE, related_name="pokemons")
 
 class PokemonType(models.Model):
     slot = models.IntegerField()
