@@ -15,7 +15,8 @@ class Pokemon(models.Model):
     moves = models.ManyToManyField('pokemons.Move', related_name="pokemons")
 
     def __str__(self):
-        return self.name
+        return self.name if self.name else "Unnamed Pokémon"
+    
 	
 class PokemonStat(models.Model):
     base_stat = models.IntegerField()

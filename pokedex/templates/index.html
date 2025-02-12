@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1><a href="{% url "index" %}">Home</a></h1>
+
+    <form method="get" action="{% url 'search' %}">
+        <input type="text" name="query" placeholder="Search for Pokemon">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if request.GET.query %}
+    <h2>Search Results for "{{ request.GET.query }}"</h2>
+    <ul>
+        {% for pokemon in pokemon_search %}
+            <li>{{ pokemon.name }}</li>
+        {% empty %}
+            <li>No results found</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <h2>Index</h2>
+    <ul>
+        {% for pokemon in pokemons %}
+            <li>{{ pokemon.name }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+    
+    
+
+{% endblock  %}
