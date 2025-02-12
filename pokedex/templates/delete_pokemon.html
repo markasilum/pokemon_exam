@@ -1,0 +1,9 @@
+<form method="POST">
+    {% csrf_token %}
+
+    Are you sure to delete this pokemon?
+
+    <input type="submit" value="Yes">
+
+    <a href="/books/">Cancel</a>
+</form>

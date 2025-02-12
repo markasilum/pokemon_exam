@@ -8,6 +8,11 @@
 <body>
 
     <h1>{{ pokemon.name }}</h1>
+    <div>
+        <a href="{% url "update_pokemon" pokemon.id %}">Edit</a>
+        <a href="{% url "delete_pokemon" pokemon.id %}">Delete</a>
+    </div>
+
     <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }}">
 
     <p>Base Experience: {{ pokemon.base_experience }}</p>

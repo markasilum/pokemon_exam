@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
 from pokemons.models import Pokemon, PokemonStat, Ability, Stat, Item, Type, Move, Species
-
+from .forms import PokemonForm
 # Create your views here.
 class PokemonIndexView(ListView):
     model = Pokemon
@@ -60,7 +60,20 @@ class PokemonDetailView(DetailView):
 
         return context
     
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context["books"] =(self.object.books.all())
-    #     return context
+class CreatePokemonView(CreateView):
+    model = Pokemon
+    form_class = PokemonForm
+    template_name = "create_pokemon.html"
+    success_url = reverse_lazy("index")
+
+
+class DeletePokemonView(DeleteView):
+    model = Pokemon
+    template_name = "delete_pokemon.html"
+    success_url = reverse_lazy("index")
+
+class UpdatePokemonView(UpdateView):
+    model = Pokemon
+    form_class = PokemonForm
+    template_name = "update_pokemon.html"
+    success_url = reverse_lazy("index")
