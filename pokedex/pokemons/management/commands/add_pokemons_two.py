@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = "Example command with an optional --delete argument"
 
     def handle(self, *args, **options):
-        generation_one_api = requests.get('https://pokeapi.co/api/v2/pokemon/?limit=6&offset=146')
+        generation_one_api = requests.get('https://pokeapi.co/api/v2/pokemon/?limit=151')
         json_data = generation_one_api.json()
         
         pokemons = json_data["results"]
@@ -128,22 +128,6 @@ class Command(BaseCommand):
                 create_pokemon.moves.add(*move_instances)
 
                 self.stdout.write(self.style.SUCCESS(f"{pokemon_name} was added to the database"))
-
-
-
-
-
-            """ 
-            sprite = models.CharField(max_length=255)
-            base_experience = models.IntegerField()
-            height = models.IntegerField()
-            weight = models.IntegerField()
-            pokemon_stats = models.ManyToManyField('pokemons.PokemonStat', related_name="pokemons", null=True)
-            species = models.ForeignKey("pokemons.Species", on_delete=models.CASCADE, related_name="pokemons", null=True)
-            types = models.ManyToManyField('pokemons.PokemonType', related_name="pokemons", null=True)
-            held_items = models.ManyToManyField('pokemons.Item', related_name="pokemons", null=True)
-            abilities = models.ManyToManyField('pokemons.Ability', related_name="pokemons", null=True)
-            """
 
 
 
