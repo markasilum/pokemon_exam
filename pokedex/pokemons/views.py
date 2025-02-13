@@ -1,9 +1,10 @@
 from django.urls import reverse_lazy
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView, FormView
 
 from pokemons.models import Pokemon, PokemonStat, Ability, Stat, Item, Type, Move, Species
-from .forms import PokemonForm, PokemonTypeFilterForm,PokemonFilterForm
+from .forms import PokemonForm, PokemonTypeFilterForm,PokemonFilterForm, PokemonStatForm, PokemonStatFormSet
+
 # Create your views here.
 class PokemonIndexView(ListView):
     model = Pokemon
@@ -134,6 +135,28 @@ class UpdatePokemonView(UpdateView):
     form_class = PokemonForm
     template_name = "update_pokemon.html"
     success_url = reverse_lazy("index")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pokemon = self.object
+
+        # Create a formset for the Pokémon's stats
+        formset = PokemonStatFormSet(queryset=PokemonStat.objects.filter(pokemons=pokemon))
+
+        context['formset'] = formset
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        formset = PokemonStatFormSet(request.POST, queryset=PokemonStat.objects.filter(pokemon=self.object))
+
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()  # This updates the PokemonStat records correctly
+            return redirect(self.success_url)
+
+        return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
 def pokemon_filter_view(request):
     pokemons = Pokemon.objects.all()  # Default to showing all Pokémon
