@@ -1,0 +1,17 @@
+<h1>Filter Pokémon by Type</h1>
+
+    <!-- Pokémon Type Filter Form -->
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter Pokémon</button>
+    </form>
+
+    <h2>Filtered Pokémon</h2>
+    <ul>
+        {% for pokemon in pokemons %}
+            <li>{{ pokemon.name }}</li>
+        {% empty %}
+            <li>No Pokémon found for the selected type.</li>
+        {% endfor %}
+    </ul>

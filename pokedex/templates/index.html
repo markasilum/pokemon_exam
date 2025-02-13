@@ -6,21 +6,38 @@
     
     {% comment %} <br> {% endcomment %}
 
-    <form method="get" action="{% url 'search' %}">
+    <form method="get" action="{% url 'index' %}">
         <input type="text" name="query" placeholder="Search for Pokemon">
         <button type="submit">Search</button>
     </form>
+
     <br>
 
-    <a href="{% url "create_pokemon" %}">Create Pokemon</a>
+    <form method="POST" action="{% url 'index' %}">
+        {% csrf_token %}
+        {{ form_type.as_p }}
+        <button type="submit">Filter Pokémon</button>
+    </form>
 
-    
-    {% comment %} <form method="get" action="{% url 'filter' %}">
-        <input type="text" name="query" placeholder="Filter by type">
-        <button type="submit">Filter</button>
-    </form> {% endcomment %}
+    <br>
 
-    {% if request.GET.query %}
+    {% if mode == "search" %}
+        <h2>Search Results for "{{ query }}"</h2>
+    {% elif mode == "filter" %}
+        <h2>Filtered Pokémon</h2>
+    {% else %}
+        <h2>All Pokémon</h2>
+    {% endif %}
+
+    <ul>
+        {% for pokemon in pokemons %}
+            <li><a href="{% url 'pokemon_detail' pokemon.id %}">{{ pokemon.name }}</a></li>
+        {% empty %}
+            <li>No Pokémon found.</li>
+        {% endfor %}
+    </ul>
+
+    {% comment %} {% if request.GET.query %}
     <h2>Search Results for "{{ request.GET.query }}"</h2>
     <ul>
         {% for pokemon in pokemon_search %}
@@ -29,14 +46,14 @@
             <li>No results found</li>
         {% endfor %}
     </ul>
-{% else %}
+    {% else %}
     <h2>Index</h2>
     <ul>
         {% for pokemon in pokemons %}
             <li><a href="{% url 'pokemon_detail' pokemon.id %}">{{ pokemon.name }}</a></li>
         {% endfor %}
     </ul>
-{% endif %}
+    {% endif %} {% endcomment %}
     
     
 

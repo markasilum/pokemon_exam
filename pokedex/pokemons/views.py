@@ -1,9 +1,9 @@
 from django.urls import reverse_lazy
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView, FormView
 
 from pokemons.models import Pokemon, PokemonStat, Ability, Stat, Item, Type, Move, Species
-from .forms import PokemonForm
+from .forms import PokemonForm, PokemonTypeFilterForm,PokemonFilterForm
 # Create your views here.
 class PokemonIndexView(ListView):
     model = Pokemon
@@ -12,34 +12,91 @@ class PokemonIndexView(ListView):
     
     def get_queryset(self):
         return Pokemon.objects.all().order_by("name")
-    
-class SearchPokemonView(ListView):
-    model = Pokemon
-    context_object_name = "pokemon_search"
+
+class PokemonListView(ListView):
+    """Handles both searching and filtering Pokémon."""
+
     template_name = 'index.html'
 
-    def get_queryset(self):
-        query = self.request.GET.get("query", "")
+    def get(self, request):
+        query = request.GET.get('query', '')
+        form = PokemonFilterForm()  # Always visible
+
         if query:
-            result = Pokemon.objects.filter(name__icontains=query)
-            print(result)
-            return result  # Filter by Pokemon name
-        return Pokemon.objects.all()
-    
-class FilterPokemonView(ListView):
-    model = Pokemon
-    context_object_name = "pokemon_filter"
-    template_name = 'index.html'
-
-    def get_queryset(self):
-        type_filter = self.request.GET.get("type", "")  # Get the selected type filter
-        
-        if type_filter:
-            result = Pokemon.objects.filter(types__name=type_filter)  # Filter by type
+            pokemons = Pokemon.objects.filter(name__icontains=query)
+            mode = "search"
         else:
-            result = Pokemon.objects.all()  # If no type filter, return all Pokémon
+            pokemons = Pokemon.objects.all()
+            mode = "index"
 
-        return result
+        context = {
+            'pokemons': pokemons,
+            'query': query,
+            'form_type': form,
+            'mode': mode,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        form = PokemonFilterForm(request.POST)
+
+        if form.is_valid() and form.cleaned_data['type']:
+            selected_type = form.cleaned_data['type']
+            pokemons = Pokemon.objects.filter(types=selected_type)
+            mode = "filter"
+        else:
+            pokemons = Pokemon.objects.all()
+            mode = "index"
+
+        context = {
+            'pokemons': pokemons,
+            'form_type': form,
+            'mode': mode,
+        }
+        return render(request, self.template_name, context)
+    
+# class SearchPokemonView(ListView):
+#     model = Pokemon
+#     context_object_name = "pokemon_search"
+#     template_name = 'index.html'
+
+#     def get(self, request):
+#         query = request.GET.get('query', '')
+
+#         if query:
+#             pokemons = Pokemon.objects.filter(name__icontains=query)
+#             mode = "search"
+#         else:
+#             pokemons = Pokemon.objects.all()
+#             mode = "index"
+
+#         context = {
+#             'pokemons': pokemons,
+#             'query': query,
+#             'form_type': PokemonFilterForm(),
+#             'mode': mode,
+#         }
+#         return render(request, self.template_name, context)
+    
+# class FilterPokemonView(ListView):
+#     template_name = 'index.html'  # Update with the correct path to your template
+#     def post(self, request):
+#         form = PokemonFilterForm(request.POST)
+
+#         if form.is_valid():
+#             selected_type = form.cleaned_data['type']
+#             pokemons = Pokemon.objects.filter(types=selected_type)
+#             mode = "filter"
+#         else:
+#             pokemons = Pokemon.objects.all()
+#             mode = "index"
+
+#         context = {
+#             'pokemons': pokemons,
+#             'form_type': form,
+#             'mode': mode,
+#         }
+#         return render(request, self.template_name, context)
     
 class PokemonDetailView(DetailView):
     model = Pokemon
@@ -77,3 +134,23 @@ class UpdatePokemonView(UpdateView):
     form_class = PokemonForm
     template_name = "update_pokemon.html"
     success_url = reverse_lazy("index")
+
+def pokemon_filter_view(request):
+    pokemons = Pokemon.objects.all()  # Default to showing all Pokémon
+
+    # Process form submission
+    if request.method == 'POST':
+        form = PokemonFilterForm(request.POST)
+        if form.is_valid():
+            selected_type = form.cleaned_data['type']
+            # Filter Pokémon based on the selected type
+            pokemons = Pokemon.objects.filter(types=selected_type)
+    else:
+        form = PokemonFilterForm()
+
+    # Pass filtered Pokémon and form to the template
+    context = {
+        'form_type': form,
+        'pokemons': pokemons,
+    }
+    return render(request, 'index.html', context)
