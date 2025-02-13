@@ -21,6 +21,8 @@
 
     <br>
 
+    <a href="{% url 'create_pokemon' %}">Create Pokemon</a>
+
     {% if mode == "search" %}
         <h2>Search Results for "{{ query }}"</h2>
     {% elif mode == "filter" %}
@@ -36,24 +38,6 @@
             <li>No Pokémon found.</li>
         {% endfor %}
     </ul>
-
-    {% comment %} {% if request.GET.query %}
-    <h2>Search Results for "{{ request.GET.query }}"</h2>
-    <ul>
-        {% for pokemon in pokemon_search %}
-            <li><a href="{% url 'pokemon_detail' pokemon.id %}">{{ pokemon.name }}</li>
-        {% empty %}
-            <li>No results found</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <h2>Index</h2>
-    <ul>
-        {% for pokemon in pokemons %}
-            <li><a href="{% url 'pokemon_detail' pokemon.id %}">{{ pokemon.name }}</a></li>
-        {% endfor %}
-    </ul>
-    {% endif %} {% endcomment %}
     
     
 

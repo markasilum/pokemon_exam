@@ -17,10 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
-
+from pokedex.views import UserRegisterView
+from django.contrib.auth.views import LogoutView, LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("pokemons/", include("pokemons.urls")),  
+    path('user/create', UserRegisterView.as_view(), name='register'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('login/', LoginView.as_view(), name='login'),
+
+
+
+    
 
 ]

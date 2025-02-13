@@ -22,7 +22,11 @@
     <h2>Evolution</h2>
 
     {% if previous_evolution %}
-        <p>Evolves from: <a href="{% url 'pokemon_detail' previous_evolution.pokemons.first.id %}">{{ previous_evolution.name }}</a></p>
+        {% if previous_evolution == "This Pokémon is not in the database." %}
+            <p>Previous evolution: {{ previous_evolution }}</p>
+        {% else %}
+            <p>Evolves from: <a href="{% url 'pokemon_detail' previous_evolution.id %}">{{ previous_evolution.name }}</a></p>
+        {% endif %}
     {% else %}
         <p>This Pokémon does not evolve from another.</p>
     {% endif %}
@@ -31,9 +35,13 @@
         <h3>Evolves into:</h3>
         <ul>
             {% for evolution in next_evolutions %}
-                <li>
-                    <a href="{% url 'pokemon_detail' evolution.pokemons.first.id %}">{{ evolution.name }}</a>
-                </li>
+                {% if evolution == "This Pokémon is not in the database." %}
+                    <li>{{ evolution }}</li>
+                {% else %}
+                    <li>
+                        <a href="{% url 'pokemon_detail' evolution.pokemons.first.id %}">{{ evolution.name }}</a>
+                    </li>
+                {% endif %}
             {% endfor %}
         </ul>
     {% else %}
@@ -67,14 +75,10 @@
         {% endfor %}
     </ul>
 
-    <h2>Moves</h2>
-    <ul>
-        {% for move in pokemon.moves.all %}
-            <li>{{ move.name }}</li>
-        {% empty %}
-            <li>No moves available</li>
-        {% endfor %}
-    </ul>
+    {% if pokemon.species %}
+        <h2>Species</h2>
+        <p>{{ pokemon.species.name }}</p>
+    {% endif %} 
 
     <h2>Held Items</h2>
     <ul>
@@ -85,10 +89,14 @@
         {% endfor %}
     </ul>
 
-    {% if pokemon.species %}
-        <h2>Species</h2>
-        <p>{{ pokemon.species.name }}</p>
-    {% endif %}
+    <h2>Moves</h2>
+    <ul>
+        {% for move in pokemon.moves.all %}
+            <li>{{ move.name }}</li>
+        {% empty %}
+            <li>No moves available</li>
+        {% endfor %}
+    </ul>
 
     <a href="{% url 'index' %}">Back to List</a>
 

@@ -1,9 +1,9 @@
 from django.urls import reverse_lazy
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView, FormView
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 from pokemons.models import Pokemon, PokemonStat, Ability, Stat, Item, Type, Move, Species
-from .forms import PokemonForm, PokemonTypeFilterForm,PokemonFilterForm, PokemonStatForm, PokemonStatFormSet
+from .forms import PokemonForm, PokemonTypeFilterForm,PokemonFilterForm, PokemonStatForm, PokemonStatFormSet,LoginForm, CreateUserForm
 
 # Create your views here.
 class PokemonIndexView(ListView):
@@ -24,10 +24,10 @@ class PokemonListView(ListView):
         form = PokemonFilterForm()  # Always visible
 
         if query:
-            pokemons = Pokemon.objects.filter(name__icontains=query)
+            pokemons = Pokemon.objects.filter(name__icontains=query).order_by('name')
             mode = "search"
         else:
-            pokemons = Pokemon.objects.all()
+            pokemons = Pokemon.objects.all().order_by('name')
             mode = "index"
 
         context = {
@@ -46,7 +46,7 @@ class PokemonListView(ListView):
             pokemons = Pokemon.objects.filter(types=selected_type)
             mode = "filter"
         else:
-            pokemons = Pokemon.objects.all()
+            pokemons = Pokemon.objects.all().order_by('name')
             mode = "index"
 
         context = {
@@ -110,27 +110,50 @@ class PokemonDetailView(DetailView):
 
         species = self.object.species  # Get Pokémon's species
 
-        # Previous evolution (if exists)
-        context["previous_evolution"] = species.evolves_from_species if species else None  
+        # Previous evolution (if exists in the database)
+        if species:
+            previous_evolution = species.evolves_from_species
+            # print(previous_evolution.id)
+           
+            if previous_evolution:
+                if not Pokemon.objects.filter(species_id=previous_evolution.id).exists():
+                    context["previous_evolution"] = "This Pokémon is not in the database."
+                else:
+                    pokemon = Pokemon.objects.get(species_id=previous_evolution.id)
+                    context["previous_evolution"] = pokemon
+            else:
+                context["previous_evolution"] = None
+        else:
+            context["previous_evolution"] = None
 
-        # Next evolutions (if exists)
-        context["next_evolutions"] = species.evolves_to.all() if species else []  
+        # Next evolutions (if exists in the database)
+        if species:
+            next_evolutions = species.evolves_to.all()
+            valid_next_evolutions = []
+            for evolution in next_evolutions:
+                if not Species.objects.filter(id=evolution.id).exists():
+                    valid_next_evolutions.append("This Pokémon is not in the database.")
+                else:
+                    valid_next_evolutions.append(evolution)
+            context["next_evolutions"] = valid_next_evolutions
+        else:
+            context["next_evolutions"] = []
 
         return context
     
-class CreatePokemonView(CreateView):
+class CreatePokemonView(LoginRequiredMixin, CreateView):
     model = Pokemon
     form_class = PokemonForm
     template_name = "create_pokemon.html"
     success_url = reverse_lazy("index")
 
 
-class DeletePokemonView(DeleteView):
+class DeletePokemonView(LoginRequiredMixin, DeleteView):
     model = Pokemon
     template_name = "delete_pokemon.html"
     success_url = reverse_lazy("index")
 
-class UpdatePokemonView(UpdateView):
+class UpdatePokemonView(LoginRequiredMixin, UpdateView):
     model = Pokemon
     form_class = PokemonForm
     template_name = "update_pokemon.html"
@@ -158,22 +181,3 @@ class UpdatePokemonView(UpdateView):
 
         return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
-def pokemon_filter_view(request):
-    pokemons = Pokemon.objects.all()  # Default to showing all Pokémon
-
-    # Process form submission
-    if request.method == 'POST':
-        form = PokemonFilterForm(request.POST)
-        if form.is_valid():
-            selected_type = form.cleaned_data['type']
-            # Filter Pokémon based on the selected type
-            pokemons = Pokemon.objects.filter(types=selected_type)
-    else:
-        form = PokemonFilterForm()
-
-    # Pass filtered Pokémon and form to the template
-    context = {
-        'form_type': form,
-        'pokemons': pokemons,
-    }
-    return render(request, 'index.html', context)
